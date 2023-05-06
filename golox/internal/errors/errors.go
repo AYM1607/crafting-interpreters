@@ -2,7 +2,7 @@ package errors
 
 import "fmt"
 
-var hadError = false
+var HadError = false
 
 func EmitError(line int, message string) {
 	report(line, "", message)
@@ -15,9 +15,5 @@ func report(line int, where, message string) {
 		where,
 		message,
 	)
-	hadError = true
-}
-
-func HadError() bool {
-	return hadError
+	HadError = true
 }
