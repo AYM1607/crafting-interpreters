@@ -5,9 +5,12 @@ import (
 	"errors"
 	"fmt"
 	"os"
+
+	lerrors "github.com/AYM1607/crafting-interpreters/golox/internal/errors"
 )
 
 var ErrInvalidScriptFile = errors.New("could not read script file")
+var ErrScriptNotRunnable = errors.New("could not run script")
 
 func RunPrompt() {
 	s := bufio.NewScanner(os.Stdin)
@@ -15,7 +18,9 @@ func RunPrompt() {
 	for s.Scan() {
 		line := s.Text()
 		Run(line)
-		// TODO: resed hadError wherever it is set.
+		// TODO: Understand the implications of this. The book implies that it's
+		// to allow the users to keep issuing commands even if they make a mistake.
+		lerrors.HadError = false
 		fmt.Print("> ")
 	}
 }
@@ -26,7 +31,9 @@ func RunFile(path string) error {
 		return errors.Join(ErrInvalidScriptFile, err)
 	}
 	Run(string(fBytes))
-	// TODO: check hadError and exit with a 65 code if so.
+	if lerrors.HadError {
+		return ErrScriptNotRunnable
+	}
 	return nil
 }
 

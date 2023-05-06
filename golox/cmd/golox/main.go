@@ -19,6 +19,12 @@ func main() {
 		if errors.Is(err, runner.ErrInvalidScriptFile) {
 			fmt.Println(err)
 			os.Exit(1)
+		} else if errors.Is(err, runner.ErrScriptNotRunnable) {
+			fmt.Println(err)
+			os.Exit(65)
+		} else if err != nil {
+			fmt.Printf("Unexpected error: %v\n", err)
+			os.Exit(1)
 		}
 	default:
 		runner.RunPrompt()
