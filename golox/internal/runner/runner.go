@@ -2,9 +2,12 @@ package runner
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"os"
 )
+
+var ErrInvalidScriptFile = errors.New("could not read script file")
 
 func RunPrompt() {
 	s := bufio.NewScanner(os.Stdin)
@@ -20,7 +23,7 @@ func RunPrompt() {
 func RunFile(path string) error {
 	fBytes, err := os.ReadFile(path)
 	if err != nil {
-		return fmt.Errorf("could not read script file: %w", err)
+		return errors.Join(ErrInvalidScriptFile, err)
 	}
 	Run(string(fBytes))
 	// TODO: check hadError and exit with a 65 code if so.
