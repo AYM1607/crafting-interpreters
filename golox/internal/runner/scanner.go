@@ -1,5 +1,9 @@
 package runner
 
+import (
+	lerrors "github.com/AYM1607/crafting-interpreters/golox/internal/errors"
+)
+
 type Scanner struct {
 	source string
 
@@ -54,6 +58,8 @@ func (s *Scanner) scanToken() {
 		s.addToken(SEMI)
 	case '*':
 		s.addToken(STAR)
+	default:
+		lerrors.EmitError(s.line, "Unexpected character.")
 	}
 }
 
