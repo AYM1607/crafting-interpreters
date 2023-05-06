@@ -1,8 +1,10 @@
-package runner
+package errors
 
 import "fmt"
 
-func emitError(line int, message string) {
+var hadError = false
+
+func EmitError(line int, message string) {
 	report(line, "", message)
 }
 
@@ -13,6 +15,9 @@ func report(line int, where, message string) {
 		where,
 		message,
 	)
-	// TODO: The book sets `hadError` as true here, need to figure out where
-	// that's used.
+	hadError = true
+}
+
+func HadError() bool {
+	return hadError
 }
