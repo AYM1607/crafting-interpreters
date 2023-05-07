@@ -90,6 +90,8 @@ func (s *Scanner) scanToken() {
 			for s.peek() != '\n' && !s.isAtEnd() {
 				s.advance()
 			}
+		} else if s.match('*') {
+			s.scanInlineComment()
 		} else {
 			s.addToken(SLASH)
 		}
@@ -215,6 +217,38 @@ func (s *Scanner) scanIdentifier() {
 		typ = kTyp
 	}
 	s.addToken(typ)
+}
+
+func (s *Scanner) scanInlineComment() {
+	depth := 1
+	closed := false
+	for !s.isAtEnd() && depth >= 1 {
+		p := s.peek()
+		pn := s.peekNex()
+		switch {
+		case p == '\n':
+			s.line += 1
+		case p == '/' && pn == '*':
+			// Consume the extra character.
+			s.advance()
+			depth += 1
+		case p == '*' && pn == '/':
+			// Consume the extra character.
+			s.advance()
+			depth -= 1
+			if depth == 0 {
+				closed = true
+			}
+		}
+		// Always consume at least one character.
+		s.advance()
+	}
+
+	// Only report an error if the last nested (could just be one) comment
+	// did not close.
+	if s.isAtEnd() && !closed {
+		lerrors.EmitError(s.line, "Unterminated comment.")
+	}
 }
 
 // addToken produces a single token without a literal value.
