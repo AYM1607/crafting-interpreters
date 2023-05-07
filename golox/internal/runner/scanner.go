@@ -108,6 +108,10 @@ func (s *Scanner) scanToken() {
 			s.scanNumber()
 			return
 		}
+		if isIdentAlpha(c) {
+			s.scanIdentifier()
+			return
+		}
 		lerrors.EmitError(s.line, "Unexpected character.")
 	}
 }
@@ -199,6 +203,18 @@ func (s *Scanner) scanNumber() {
 		NUMBER,
 		val,
 	)
+}
+
+func (s *Scanner) scanIdentifier() {
+	for isIdentAlphaNumeric(s.peek()) {
+		s.advance()
+	}
+	l := s.source[s.start:s.current]
+	typ := IDENT
+	if kTyp, ok := KeywordTypes[l]; ok {
+		typ = kTyp
+	}
+	s.addToken(typ)
 }
 
 // addToken produces a single token without a literal value.
