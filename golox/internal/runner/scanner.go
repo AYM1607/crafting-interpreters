@@ -1,6 +1,8 @@
 package runner
 
 import (
+	"strconv"
+
 	lerrors "github.com/AYM1607/crafting-interpreters/golox/internal/errors"
 )
 
@@ -101,6 +103,11 @@ func (s *Scanner) scanToken() {
 	case '\n':
 		s.line += 1
 	default:
+		// NOTE: adding this here to avoid listing all digits in a case.
+		if isDigit(c) {
+			s.scanNumber()
+			return
+		}
 		lerrors.EmitError(s.line, "Unexpected character.")
 	}
 }
@@ -134,6 +141,14 @@ func (s *Scanner) peek() byte {
 	return s.source[s.current]
 }
 
+func (s *Scanner) peekNex() byte {
+	idx := s.current + 1
+	if idx >= len(s.source) {
+		return 0
+	}
+	return s.source[idx]
+}
+
 func (s *Scanner) scanString() {
 	for s.peek() != '"' && !s.isAtEnd() {
 		// Lox allows multi-line strings.
@@ -154,6 +169,36 @@ func (s *Scanner) scanString() {
 	// Trim enclosing quotes
 	val := s.source[s.start+1 : s.current-1]
 	s.addTokenWithLiteral(STRING, val)
+}
+
+func (s *Scanner) scanNumber() {
+	// Consume all digits preceding a dot (if any)
+	for isDigit(s.peek()) {
+		s.advance()
+	}
+
+	// Look for a decimal part.
+	// Only literals in the form 123 and 123.123 are allowed.
+	if s.peek() == '.' && isDigit(s.peekNex()) {
+		// Only consume the dot if we're sure the format is valid.
+		s.advance()
+
+		// Consume the rest of the digis.
+		for isDigit(s.peek()) {
+			s.advance()
+		}
+	}
+	// NOTE: Ignoring error because we're sure the string follows the float
+	// format. This should probably still report it but will leave as-is
+	// for now.
+	val, _ := strconv.ParseFloat(
+		s.source[s.start:s.current],
+		64,
+	)
+	s.addTokenWithLiteral(
+		NUMBER,
+		val,
+	)
 }
 
 // addToken produces a single token without a literal value.
