@@ -91,6 +91,8 @@ func (s *Scanner) scanToken() {
 		} else {
 			s.addToken(SLASH)
 		}
+	case '"':
+		s.scanString()
 	// Ignore whitespace.
 	case ' ':
 	case '\t':
@@ -130,6 +132,28 @@ func (s *Scanner) peek() byte {
 		return 0
 	}
 	return s.source[s.current]
+}
+
+func (s *Scanner) scanString() {
+	for s.peek() != '"' && !s.isAtEnd() {
+		// Lox allows multi-line strings.
+		if s.peek() == '\n' {
+			s.line += 1
+		}
+		s.advance()
+	}
+
+	if s.isAtEnd() {
+		lerrors.EmitError(s.line, "Unterminated string.")
+		return
+	}
+
+	// Consume the closing "
+	s.advance()
+
+	// Trim enclosing quotes
+	val := s.source[s.start+1 : s.current-1]
+	s.addTokenWithLiteral(STRING, val)
 }
 
 // addToken produces a single token without a literal value.
