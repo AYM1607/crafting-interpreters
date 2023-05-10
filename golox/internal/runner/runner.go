@@ -7,6 +7,7 @@ import (
 	"os"
 
 	lerrors "github.com/AYM1607/crafting-interpreters/golox/internal/errors"
+	"github.com/AYM1607/crafting-interpreters/golox/internal/scanner"
 )
 
 var ErrInvalidScriptFile = errors.New("could not read script file")
@@ -38,7 +39,7 @@ func RunFile(path string) error {
 }
 
 func Run(source string) {
-	s := NewScanner(source)
+	s := scanner.NewScanner(source)
 	tokens := s.ScanTokens()
 
 	for _, t := range tokens {

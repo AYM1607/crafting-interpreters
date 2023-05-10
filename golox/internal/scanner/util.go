@@ -1,4 +1,4 @@
-package runner
+package scanner
 
 func isIdentAlphaNumeric(c byte) bool {
 	return isIdentAlpha(c) || isDigit(c)

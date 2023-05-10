@@ -1,4 +1,4 @@
-package runner
+package types
 
 var KeywordTypes = map[string]TokenType{
 	"and":    AND,

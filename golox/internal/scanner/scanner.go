@@ -1,16 +1,17 @@
-package runner
+package scanner
 
 import (
 	"strconv"
 
 	lerrors "github.com/AYM1607/crafting-interpreters/golox/internal/errors"
+	"github.com/AYM1607/crafting-interpreters/golox/internal/types"
 )
 
 type Scanner struct {
 	source string
 
 	// State.
-	tokens  []Token
+	tokens  []types.Token
 	start   int
 	current int
 	line    int
@@ -19,7 +20,7 @@ type Scanner struct {
 func NewScanner(source string) *Scanner {
 	return &Scanner{
 		source: source,
-		tokens: []Token{},
+		tokens: []types.Token{},
 
 		start:   0,
 		current: 0,
@@ -27,13 +28,13 @@ func NewScanner(source string) *Scanner {
 	}
 }
 
-func (s *Scanner) ScanTokens() []Token {
+func (s *Scanner) ScanTokens() []types.Token {
 	for !s.isAtEnd() {
 		s.start = s.current
 		s.scanToken()
 	}
 
-	s.tokens = append(s.tokens, NewToken(EOF, "", nil, s.line))
+	s.tokens = append(s.tokens, types.NewToken(types.EOF, "", nil, s.line))
 	return s.tokens
 }
 
@@ -41,47 +42,47 @@ func (s *Scanner) scanToken() {
 	c := s.advance()
 	switch c {
 	case '(':
-		s.addToken(LPAREN)
+		s.addToken(types.LPAREN)
 	case ')':
-		s.addToken(RPAREN)
+		s.addToken(types.RPAREN)
 	case '{':
-		s.addToken(LBRACE)
+		s.addToken(types.LBRACE)
 	case '}':
-		s.addToken(RBRACE)
+		s.addToken(types.RBRACE)
 	case ',':
-		s.addToken(COMMA)
+		s.addToken(types.COMMA)
 	case '.':
-		s.addToken(DOT)
+		s.addToken(types.DOT)
 	case '-':
-		s.addToken(MINUS)
+		s.addToken(types.MINUS)
 	case '+':
-		s.addToken(PLUS)
+		s.addToken(types.PLUS)
 	case ';':
-		s.addToken(SEMI)
+		s.addToken(types.SEMI)
 	case '*':
-		s.addToken(STAR)
+		s.addToken(types.STAR)
 	case '!':
-		tok := BANG
+		tok := types.BANG
 		if s.match('=') {
-			tok = BANG_EQUAL
+			tok = types.BANG_EQUAL
 		}
 		s.addToken(tok)
 	case '=':
-		tok := EQUAL
+		tok := types.EQUAL
 		if s.match('=') {
-			tok = EQUAL_EQUAL
+			tok = types.EQUAL_EQUAL
 		}
 		s.addToken(tok)
 	case '<':
-		tok := LT
+		tok := types.LT
 		if s.match('=') {
-			tok = LTE
+			tok = types.LTE
 		}
 		s.addToken(tok)
 	case '>':
-		tok := GT
+		tok := types.GT
 		if s.match('=') {
-			tok = GTE
+			tok = types.GTE
 		}
 		s.addToken(tok)
 	case '/':
@@ -93,7 +94,7 @@ func (s *Scanner) scanToken() {
 		} else if s.match('*') {
 			s.scanInlineComment()
 		} else {
-			s.addToken(SLASH)
+			s.addToken(types.SLASH)
 		}
 	case '"':
 		s.scanString()
@@ -174,7 +175,7 @@ func (s *Scanner) scanString() {
 
 	// Trim enclosing quotes
 	val := s.source[s.start+1 : s.current-1]
-	s.addTokenWithLiteral(STRING, val)
+	s.addTokenWithLiteral(types.STRING, val)
 }
 
 func (s *Scanner) scanNumber() {
@@ -202,7 +203,7 @@ func (s *Scanner) scanNumber() {
 		64,
 	)
 	s.addTokenWithLiteral(
-		NUMBER,
+		types.NUMBER,
 		val,
 	)
 }
@@ -212,8 +213,8 @@ func (s *Scanner) scanIdentifier() {
 		s.advance()
 	}
 	l := s.source[s.start:s.current]
-	typ := IDENT
-	if kTyp, ok := KeywordTypes[l]; ok {
+	typ := types.IDENT
+	if kTyp, ok := types.KeywordTypes[l]; ok {
 		typ = kTyp
 	}
 	s.addToken(typ)
@@ -252,16 +253,16 @@ func (s *Scanner) scanInlineComment() {
 }
 
 // addToken produces a single token without a literal value.
-func (s *Scanner) addToken(typ TokenType) {
+func (s *Scanner) addToken(typ types.TokenType) {
 	s.addTokenWithLiteral(typ, nil)
 }
 
 // addTokenWithLiteral produces a single token with the given literal value.
-func (s *Scanner) addTokenWithLiteral(typ TokenType, literal interface{}) {
+func (s *Scanner) addTokenWithLiteral(typ types.TokenType, literal interface{}) {
 	lexme := s.source[s.start:s.current]
 	s.tokens = append(
 		s.tokens,
-		NewToken(typ, lexme, literal, s.line),
+		types.NewToken(typ, lexme, literal, s.line),
 	)
 }
 
